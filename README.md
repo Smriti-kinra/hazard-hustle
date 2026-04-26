@@ -37,7 +37,7 @@ How to Run
 Open the following file in any modern web browser:
 index.html
 
-Or access via GitHub Pages.
+Or access via GitHub Pages: https://smriti-kinra.github.io/hazard-hustle/
 
 
 Author
