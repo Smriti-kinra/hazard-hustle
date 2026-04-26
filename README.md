@@ -1,4 +1,4 @@
-Pipeline Hazard Simulator — Hazard Hustle
+**Pipeline Hazard Simulator — Hazard Hustle**
 
 Overview
 
