@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hazard Hustle — Pipeline Hazard Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Space+Mono:wght@400;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+html[data-theme="dark"]{
+  --bg:#03030f;--bg2:#070720;
+  --surface:rgba(7,7,32,0.88);--surface2:rgba(5,5,22,0.72);
+  --border:rgba(0,229,255,0.18);--border2:rgba(0,229,255,0.09);--border3:rgba(0,229,255,0.05);
+  --text:#d2e0ff;--text2:#8090b4;--text3:#455070;
+  --accent:#00e5ff;--accent2:#9c6bff;--accent3:#ff7043;
+  --green:#00e676;--red:#ff4444;--gold:#ffc107;
+  --pIF-bg:rgba(0,229,255,.14);--pIF-c:#00e5ff;--pIF-b:rgba(0,229,255,.45);
+  --pID-bg:rgba(156,107,255,.14);--pID-c:#9c6bff;--pID-b:rgba(156,107,255,.45);
+  --pEX-bg:rgba(255,112,67,.14);--pEX-c:#ff7043;--pEX-b:rgba(255,112,67,.45);
+  --pMEM-bg:rgba(0,230,118,.14);--pMEM-c:#00e676;--pMEM-b:rgba(0,230,118,.45);
+  --pWB-bg:rgba(255,79,154,.14);--pWB-c:#ff4f9a;--pWB-b:rgba(255,79,154,.45);
+  --pMWB-bg:rgba(38,198,218,.14);--pMWB-c:#26c6da;--pMWB-b:rgba(38,198,218,.45);
+  --pSTALL-bg:rgba(255,68,68,.12);--pSTALL-c:#ff6666;--pSTALL-b:rgba(255,68,68,.4);
+  --th-bg:rgba(4,4,20,0.97);--td-bg:rgba(0,229,255,0.04);
+  --drag-c:rgba(0,229,255,0.07);--drag-h:rgba(0,229,255,0.18);
+  --hz-raw-bg:rgba(255,68,68,.1);--hz-raw-c:#ff8888;--hz-raw-b:rgba(255,68,68,.3);
+  --hz-fwd-bg:rgba(0,230,118,.08);--hz-fwd-c:#4dff91;--hz-fwd-b:rgba(0,230,118,.3);
+  --hz-ok-bg:rgba(0,229,255,.06);--hz-ok-c:#7890b0;--hz-ok-b:rgba(0,229,255,.15);
+  --sel-bg:rgba(0,229,255,0.05);--sel-b:rgba(0,229,255,0.22);
+  --op-sel-bg:#00e5ff;--op-sel-c:#000;
+}
+html[data-theme="light"]{
+  --bg:#f0f4ff;--bg2:#e4eaff;
+  --surface:rgba(255,255,255,0.96);--surface2:rgba(238,244,255,0.92);
+  --border:rgba(50,90,200,0.18);--border2:rgba(50,90,200,0.10);--border3:rgba(50,90,200,0.06);
+  --text:#1a2450;--text2:#4a5a80;--text3:#8090b8;
+  --accent:#1a5cdb;--accent2:#6a28c8;--accent3:#c84010;
+  --green:#0a9040;--red:#c02020;--gold:#a06800;
+  --pIF-bg:rgba(26,92,219,.10);--pIF-c:#1a5cdb;--pIF-b:rgba(26,92,219,.4);
+  --pID-bg:rgba(106,40,200,.10);--pID-c:#6a28c8;--pID-b:rgba(106,40,200,.4);
+  --pEX-bg:rgba(200,64,16,.10);--pEX-c:#c84010;--pEX-b:rgba(200,64,16,.4);
+  --pMEM-bg:rgba(10,144,64,.10);--pMEM-c:#0a9040;--pMEM-b:rgba(10,144,64,.4);
+  --pWB-bg:rgba(180,16,88,.10);--pWB-c:#b41058;--pWB-b:rgba(180,16,88,.4);
+  --pMWB-bg:rgba(0,120,150,.10);--pMWB-c:#007896;--pMWB-b:rgba(0,120,150,.4);
+  --pSTALL-bg:rgba(192,32,32,.08);--pSTALL-c:#c02020;--pSTALL-b:rgba(192,32,32,.35);
+  --th-bg:rgba(228,234,255,0.98);--td-bg:rgba(26,92,219,0.04);
+  --drag-c:rgba(50,90,200,0.06);--drag-h:rgba(50,90,200,0.15);
+  --hz-raw-bg:rgba(192,32,32,.08);--hz-raw-c:#b02020;--hz-raw-b:rgba(192,32,32,.28);
+  --hz-fwd-bg:rgba(10,144,64,.08);--hz-fwd-c:#0a8838;--hz-fwd-b:rgba(10,144,64,.28);
+  --hz-ok-bg:rgba(50,90,200,.05);--hz-ok-c:#5868a0;--hz-ok-b:rgba(50,90,200,.15);
+  --sel-bg:rgba(26,92,219,0.05);--sel-b:rgba(26,92,219,0.22);
+  --op-sel-bg:#1a5cdb;--op-sel-c:#fff;
+}
+
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:16px;transition:background .22s,color .22s}
+canvas#stars{position:fixed;inset:0;z-index:0;pointer-events:none;transition:opacity .3s}
+html[data-theme="light"] canvas#stars{opacity:0}
+.app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh}
+
+/* HEADER */
+.header{
+  padding:.55rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:.8rem;
+  border-bottom:1px solid var(--border);background:var(--surface);backdrop-filter:blur(12px);flex-shrink:0;
+}
+.title-main{font-family:'Orbitron',monospace;font-size:1.15rem;font-weight:900;color:var(--accent);letter-spacing:.12em}
+html[data-theme="dark"] .title-main{text-shadow:0 0 24px rgba(0,229,255,.45)}
+.title-sub{font-size:.85rem;color:var(--text2);letter-spacing:.16em;font-family:'Space Mono',monospace;font-weight:700}
+.header-right{display:flex;align-items:center;gap:.7rem}
+.badge{font-family:'Orbitron',monospace;font-size:.68rem;letter-spacing:.12em;color:var(--gold);border:1px solid rgba(160,120,0,.3);padding:.28rem .6rem;border-radius:4px;background:rgba(160,120,0,.06);white-space:nowrap}
+.theme-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);cursor:pointer;width:36px;height:36px;border-radius:8px;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* BODY */
+.body{display:flex;flex:1;overflow:hidden;min-height:0}
+
+/* SIDEBAR */
+.sidebar{width:40vw;min-width:200px;max-width:600px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;background:var(--surface);padding:.9rem;scrollbar-width:thin;scrollbar-color:rgba(128,144,176,.2) transparent}
+
+/* DRAG HANDLE VERTICAL */
+.drag-h{width:7px;flex-shrink:0;cursor:col-resize;background:var(--drag-c);border-right:1px solid var(--border2);position:relative;z-index:10;transition:background .15s;user-select:none}
+.drag-h:hover,.drag-h.act{background:var(--drag-h)}
+.drag-h::after{content:'⋮';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:.75rem;color:var(--text3);pointer-events:none}
+
+/* MAIN */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.main-top{flex:1;min-height:0;display:flex;flex-direction:column;padding:.75rem .75rem 0;overflow:hidden}
+
+/* DRAG HANDLE HORIZONTAL */
+.drag-v{height:8px;flex-shrink:0;cursor:row-resize;background:var(--drag-c);border-top:1px solid var(--border2);position:relative;z-index:10;transition:background .15s;user-select:none}
+.drag-v:hover,.drag-v.act{background:var(--drag-h)}
+.drag-v::after{content:'· · ·';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:.6rem;letter-spacing:.2em;color:var(--text3);pointer-events:none}
+
+/* HAZARD PANEL */
+.hazard-panel{height:160px;min-height:55px;max-height:400px;flex-shrink:0;background:var(--surface);border-top:1px solid var(--border);padding:.65rem .75rem;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(128,144,176,.2) transparent}
+
+/* PANEL SECTION */
+.ps{margin-bottom:1rem}
+.ps-title{font-family:'Orbitron',monospace;font-size:.78rem;letter-spacing:.18em;color:var(--accent);margin-bottom:.65rem;padding-bottom:.35rem;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:.45rem}
+.ps-title::before{content:'';display:inline-block;width:7px;height:7px;background:var(--accent);border-radius:50%;flex-shrink:0}
+html[data-theme="dark"] .ps-title::before{box-shadow:0 0 8px var(--accent)}
+
+/* INSTRUCTION CARD */
+.instr-list{display:flex;flex-direction:column;gap:.55rem;margin-bottom:.65rem}
+.icard{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:.55rem .65rem;transition:border-color .18s}
+.icard:hover{border-color:var(--border)}
+.icard-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;gap:.4rem}
+.inum{font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;color:var(--accent);background:var(--drag-c);border:1px solid var(--border);padding:.18rem .42rem;border-radius:4px;min-width:30px;text-align:center}
+.ipreview{font-family:'Space Mono',monospace;font-size:.82rem;color:var(--text2);flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ipreview.ok{color:var(--text)}
+.idel{background:none;border:1px solid rgba(200,32,32,.22);color:rgba(200,32,32,.5);cursor:pointer;width:25px;height:25px;border-radius:4px;font-size:1.05rem;display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0}
+.idel:hover{border-color:var(--red);color:var(--red);background:rgba(200,32,32,.08)}
+
+/* OP BUTTONS */
+.op-group{display:flex;flex-wrap:wrap;gap:.28rem;margin-bottom:.45rem}
+.op-btn{background:var(--drag-c);border:1px solid var(--border);color:var(--text2);cursor:pointer;padding:.34rem .62rem;border-radius:5px;font-family:'Space Mono',monospace;font-size:.82rem;font-weight:700;transition:all .14s;white-space:nowrap}
+.op-btn:hover{border-color:var(--accent);color:var(--accent)}
+.op-btn.sel{background:var(--op-sel-bg);border-color:var(--op-sel-bg);color:var(--op-sel-c);font-weight:700}
+
+/* REGISTER ROW */
+.reg-row{display:flex;flex-wrap:wrap;gap:.32rem;align-items:center}
+.rl{font-size:.82rem;color:var(--text3);font-weight:600;min-width:30px}
+.rsel{background:var(--sel-bg);border:1px solid var(--sel-b);color:var(--text);font-family:'Space Mono',monospace;font-size:.82rem;padding:.3rem .38rem;border-radius:5px;outline:none;cursor:pointer;transition:border-color .14s;appearance:none;text-align:center;min-width:54px}
+.rsel:focus{border-color:var(--accent)}
+.roff{width:56px;background:var(--sel-bg);border:1px solid var(--sel-b);color:var(--text);font-family:'Space Mono',monospace;font-size:.82rem;padding:.3rem .35rem;border-radius:5px;outline:none;transition:border-color .14s;text-align:center}
+.roff:focus{border-color:var(--accent)}
+
+/* ADD BUTTON */
+.btn-add{width:100%;background:var(--drag-c);border:1.5px dashed var(--border);color:var(--text2);cursor:pointer;padding:.5rem;border-radius:6px;font-family:'Rajdhani',sans-serif;font-size:.96rem;font-weight:600;transition:all .18s}
+.btn-add:hover{background:var(--drag-h);border-color:var(--accent);color:var(--accent)}
+.btn-add:disabled{opacity:.32;cursor:default;pointer-events:none}
+
+/* RADIO */
+.rgrp{display:flex;gap:.38rem;margin-bottom:.42rem}
+.rbtn{flex:1;background:var(--drag-c);border:1px solid var(--border);color:var(--text2);cursor:pointer;padding:.44rem;border-radius:5px;text-align:center;font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:500;transition:all .15s}
+.rbtn.on{background:var(--drag-h);border-color:var(--accent);color:var(--accent);font-weight:700}
+.sdesc{font-size:.84rem;color:var(--text2);margin-bottom:.5rem;font-family:'Space Mono',monospace}
+
+/* TOGGLE */
+.trow{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.tlabel{font-size:.95rem;font-weight:600;color:var(--text)}
+.tsub{font-size:.8rem;color:var(--text2)}
+.tsw{position:relative;width:42px;height:23px;cursor:pointer;background:var(--drag-c);border:1px solid var(--border);border-radius:12px;transition:all .26s;flex-shrink:0}
+.tsw.on{background:rgba(0,160,70,.16);border-color:rgba(0,160,70,.45)}
+html[data-theme="light"] .tsw.on{background:rgba(10,144,64,.14);border-color:rgba(10,144,64,.45)}
+.tsw::after{content:'';position:absolute;top:3px;left:3px;width:15px;height:15px;background:var(--text3);border-radius:50%;transition:all .26s}
+.tsw.on::after{transform:translateX(19px);background:var(--green)}
+
+/* CTRL BUTTONS */
+.cbtns{display:flex;flex-direction:column;gap:.42rem}
+.cb{width:100%;padding:.58rem;border-radius:6px;border:1px solid;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:.98rem;font-weight:700;letter-spacing:.04em;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:.4rem}
+.cb-run{background:rgba(0,229,255,.07);border-color:rgba(0,229,255,.28);color:var(--accent)}
+html[data-theme="light"] .cb-run{background:rgba(26,92,219,.07);border-color:rgba(26,92,219,.28)}
+.cb-run:hover{background:var(--drag-h);border-color:var(--accent)}
+.cb-step{background:rgba(156,107,255,.07);border-color:rgba(156,107,255,.28);color:var(--accent2)}
+html[data-theme="light"] .cb-step{background:rgba(106,40,200,.07);border-color:rgba(106,40,200,.28)}
+.cb-step:hover{background:rgba(156,107,255,.14);border-color:var(--accent2)}
+.cb-reset{background:rgba(255,112,67,.07);border-color:rgba(255,112,67,.28);color:var(--accent3)}
+html[data-theme="light"] .cb-reset{background:rgba(200,64,16,.07);border-color:rgba(200,64,16,.28)}
+.cb-reset:hover{background:rgba(255,112,67,.14);border-color:var(--accent3)}
+.cb:disabled{opacity:.3;cursor:default;pointer-events:none}
+
+.srow{display:flex;align-items:center;gap:.45rem;margin-top:.38rem}
+.slbl{font-size:.84rem;color:var(--text2);white-space:nowrap;font-weight:500}
+.sld{flex:1;accent-color:var(--accent)}
+
+.cydisplay{text-align:center;padding:.52rem;background:var(--drag-c);border:1px solid var(--border);border-radius:7px;margin-top:.48rem}
+.cynum{font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:700;color:var(--accent)}
+.cylbl{font-size:.76rem;color:var(--text2);letter-spacing:.14em}
+.cyprog{margin-top:.33rem;background:var(--border2);border-radius:3px;height:5px;overflow:hidden}
+.cybar{height:5px;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .3s}
+
+/* VIZ HEADER */
+.viz-hdr{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;margin-bottom:.5rem}
+.viz-title{font-family:'Orbitron',monospace;font-size:.82rem;letter-spacing:.16em;color:var(--text2)}
+.legend{display:flex;gap:.65rem;flex-wrap:wrap}
+.ldot{width:12px;height:12px;border-radius:3px;border:1px solid;flex-shrink:0}
+.li{display:flex;align-items:center;gap:.3rem;font-size:.82rem;font-weight:600}
+
+/* TABLE */
+.tbl-wrap{flex:1;min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:rgba(128,144,176,.18) transparent;border:1px solid var(--border);border-radius:8px;background:var(--surface2)}
+table.pt{border-collapse:collapse;min-width:100%;font-family:'Space Mono',monospace;font-size:.88rem}
+table.pt th,table.pt td{padding:.52rem .58rem;text-align:center;border:1px solid var(--border3);white-space:nowrap}
+.th-i{background:var(--surface);color:var(--accent);font-size:.78rem;letter-spacing:.08em;position:sticky;left:0;z-index:15;min-width:160px;text-align:left;padding-left:.72rem;box-shadow:2px 0 8px rgba(0,0,0,.35)}
+.th-c{font-family:'Orbitron',monospace;font-size:.72rem;color:var(--text2);background:var(--th-bg);min-width:80px}
+.th-c.ac{color:var(--gold);background:rgba(160,120,0,.08)}
+.td-i{background:var(--surface);position:sticky;left:0;z-index:10;text-align:left;padding-left:.72rem;border-right:2px solid var(--border);box-shadow:2px 0 8px rgba(0,0,0,.25)}
+.td-i .lbl{color:var(--accent);font-weight:700;font-size:.76rem;display:block}
+.td-i .txt{color:var(--text);font-size:.84rem;opacity:.9}
+.cell{opacity:0;transform:scale(.6);transition:opacity .22s,transform .22s;min-width:80px;min-height:44px}
+.cell.vis{opacity:1;transform:scale(1)}
+.cell.cur{animation:pcur .55s ease infinite alternate}
+@keyframes pcur{from{filter:brightness(1)}to{filter:brightness(1.4)}}
+.sp{display:inline-block;padding:.3rem .66rem;border-radius:5px;font-size:.82rem;font-weight:700;border:1px solid;letter-spacing:.03em;transition:box-shadow .22s}
+.cell.cur .sp,.cell.ac .sp{box-shadow:0 0 10px currentColor}
+.sIF  .sp{background:var(--pIF-bg);border-color:var(--pIF-b);color:var(--pIF-c)}
+.sID  .sp{background:var(--pID-bg);border-color:var(--pID-b);color:var(--pID-c)}
+.sEX  .sp{background:var(--pEX-bg);border-color:var(--pEX-b);color:var(--pEX-c)}
+.sMEM .sp{background:var(--pMEM-bg);border-color:var(--pMEM-b);color:var(--pMEM-c)}
+.sWB  .sp{background:var(--pWB-bg);border-color:var(--pWB-b);color:var(--pWB-c)}
+.sMWB .sp{background:var(--pMWB-bg);border-color:var(--pMWB-b);color:var(--pMWB-c);font-size:.74rem}
+.sSTALL .sp{background:var(--pSTALL-bg);border-color:var(--pSTALL-b);color:var(--pSTALL-c);animation:spulse 1.1s ease infinite alternate}
+@keyframes spulse{from{background:var(--pSTALL-bg)}to{background:rgba(200,40,40,.22)}}
+.stall-n{font-size:.65rem;display:block;opacity:.72;font-weight:400;letter-spacing:0}
+.sFWD .sp{background:var(--pMEM-bg);border-color:var(--pMEM-b);color:var(--pMEM-c)}
+.fwd-t{font-size:.65rem;display:block;opacity:.85;font-weight:400}
+
+/* HAZARD PANEL */
+.hz-title{font-family:'Orbitron',monospace;font-size:.74rem;letter-spacing:.18em;color:var(--text2);margin-bottom:.45rem}
+.hz-list{display:flex;flex-wrap:wrap;gap:.4rem}
+.hz-tag{font-size:.84rem;padding:.28rem .66rem;border-radius:5px;border:1px solid;font-weight:600;display:flex;align-items:center;gap:.35rem}
+.hz-tag.raw{background:var(--hz-raw-bg);border-color:var(--hz-raw-b);color:var(--hz-raw-c)}
+.bottom-cols{display:flex;gap:0;height:100%;min-height:0}
+.bottom-col{flex:1;min-width:0;overflow-y:auto;padding:.1rem .3rem;scrollbar-width:thin;scrollbar-color:rgba(128,144,176,.2) transparent}
+.bottom-col+.bottom-col{border-left:1px solid var(--border2);padding-left:.65rem;margin-left:.15rem}
+.sol-col .sol-box{background:var(--drag-c);border:1px solid var(--border2);border-radius:6px;padding:.45rem .6rem;margin-bottom:.45rem}
+.sol-col .sol-title{font-family:'Orbitron',monospace;font-size:.67rem;letter-spacing:.12em;margin-bottom:.32rem;font-weight:700}
+.sol-col .sol-title.nofwd{color:var(--red)}
+.sol-col .sol-title.fwd{color:var(--green)}
+.sol-col .sol-title.lw{color:var(--gold)}
+.sol-col .sol-seq{font-family:'Space Mono',monospace;font-size:.76rem;margin-bottom:.3rem;letter-spacing:.01em;line-height:1.6}
+.sol-col .sol-seq .s-if{color:var(--pIF-c)}
+.sol-col .sol-seq .s-id{color:var(--pID-c)}
+.sol-col .sol-seq .s-ex{color:var(--pEX-c)}
+.sol-col .sol-seq .s-mem{color:var(--pMEM-c)}
+.sol-col .sol-seq .s-wb{color:var(--pWB-c)}
+.sol-col .sol-seq .s-mwb{color:var(--pMWB-c)}
+.sol-col .sol-seq .s-stall{color:var(--pSTALL-c)}
+.sol-col .sol-body{font-size:.82rem;color:var(--text2);line-height:1.6;font-family:'Rajdhani',sans-serif;font-weight:500}
+.sol-col .sol-body strong{color:var(--text);font-weight:700}
+.hz-tag.fwd{background:var(--hz-fwd-bg);border-color:var(--hz-fwd-b);color:var(--hz-fwd-c)}
+.hz-tag.ok{background:var(--hz-ok-bg);border-color:var(--hz-ok-b);color:var(--hz-ok-c)}
+.hz-d{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.hz-e{color:var(--text2);font-size:.92rem;font-weight:500;padding:.15rem 0}
+
+/* EMPTY */
+.empty-s{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text2);gap:.55rem}
+.empty-s .big{font-size:2.8rem;opacity:.18}
+.empty-s p{font-size:.96rem;letter-spacing:.04em}
+
+/* HELP BOX */
+.hbox{background:var(--drag-c);border:1px solid var(--border2);border-radius:6px;padding:.6rem .75rem}
+.hbox p{font-size:.88rem;color:var(--text2);line-height:1.75;font-family:'Rajdhani',sans-serif;font-weight:500}
+
+/* LEGEND BOX */
+.legend-box{background:var(--drag-c);border:1px solid var(--border2);border-radius:6px;padding:.6rem .75rem;margin-bottom:.8rem}
+.legend-box .leg-title{font-family:'Orbitron',monospace;font-size:.7rem;letter-spacing:.16em;color:var(--accent);margin-bottom:.5rem}
+.legend-grid{display:grid;grid-template-columns:1fr 1fr;gap:.22rem .65rem}
+.leg-item{display:flex;align-items:flex-start;gap:.38rem;font-size:.84rem;line-height:1.45;font-family:'Rajdhani',sans-serif;font-weight:500}
+.leg-item .leg-k{font-family:'Space Mono',monospace;font-weight:700;font-size:.8rem;color:var(--accent2);min-width:52px;flex-shrink:0;padding-top:.05rem}
+.leg-item .leg-v{color:var(--text2)}
+.leg-sep{grid-column:1/-1;border:none;border-top:1px solid var(--border2);margin:.2rem 0}
+
+/* SYMBOL BOX */
+.sym-grid{display:flex;flex-direction:column;gap:.3rem}
+.sym-item{display:flex;align-items:flex-start;gap:.4rem;font-size:.84rem;line-height:1.45;font-family:'Rajdhani',sans-serif;font-weight:500}
+.sym-item .sym-s{font-family:'Space Mono',monospace;font-weight:700;font-size:.82rem;min-width:56px;flex-shrink:0;padding-top:.05rem}
+.sym-item .sym-v{color:var(--text2)}
+
+/* SOLUTION BOX */
+.sol-box{background:var(--drag-c);border:1px solid var(--border2);border-radius:6px;padding:.6rem .75rem;margin-bottom:.6rem}
+.sol-box .sol-title{font-family:'Orbitron',monospace;font-size:.7rem;letter-spacing:.14em;margin-bottom:.4rem;font-weight:700}
+.sol-box .sol-title.nofwd{color:var(--red)}
+.sol-box .sol-title.fwd{color:var(--green)}
+.sol-box .sol-title.lw{color:var(--gold)}
+.sol-seq{font-family:'Space Mono',monospace;font-size:.78rem;margin-bottom:.38rem;letter-spacing:.02em}
+.sol-seq .s-if{color:var(--pIF-c)}
+.sol-seq .s-id{color:var(--pID-c)}
+.sol-seq .s-ex{color:var(--pEX-c)}
+.sol-seq .s-mem{color:var(--pMEM-c)}
+.sol-seq .s-wb{color:var(--pWB-c)}
+.sol-seq .s-mwb{color:var(--pMWB-c)}
+.sol-seq .s-stall{color:var(--pSTALL-c)}
+.sol-body{font-size:.84rem;color:var(--text2);line-height:1.68;font-family:'Rajdhani',sans-serif;font-weight:500}
+.sol-body strong{color:var(--text);font-weight:700}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="app">
+
+  <header class="header">
+    <div>
+      <div class="title-main">HAZARD HUSTLE</div>
+      <div class="title-sub">PIPELINE HAZARD SIMULATOR</div>
+    </div>
+    <div class="header-right">
+      <button class="theme-btn" id="themeBtn" title="Toggle theme">🌙</button>
+    </div>
+  </header>
+
+  <div class="body">
+    <aside class="sidebar" id="sidebar">
+
+      <!-- ASSUMPTIONS (first) -->
+      <div class="ps">
+        <div class="ps-title">ASSUMPTIONS</div>
+        <div class="legend-box">
+          <div class="sol-body" style="font-size:.82rem;line-height:1.72">
+            • <strong style="color:var(--text)">RAW hazards only</strong> — Read After Write data hazards are simulated<br>
+            • <strong style="color:var(--text)">No structural hazards</strong> — separate instruction &amp; data memory assumed<br>
+            • <strong style="color:var(--text)">No control hazards</strong> — branch/jump hazards not simulated<br>
+            • <strong style="color:var(--text)">Stalls between ID and EX</strong> — hazard detected at decode stage<br>
+            • <strong style="color:var(--text)">Split-phase register access</strong> — configurable below (WB writes first half, ID reads second half of same cycle when ON)<br>
+            • <strong style="color:var(--text)">In-order pipeline</strong> — instructions execute in program order
+          </div>
+        </div>
+      </div>
+
+      <!-- INSTRUCTIONS -->
+      <div class="ps">
+        <div class="ps-title">INSTRUCTIONS</div>
+        <div class="instr-list" id="instrList"></div>
+        <button class="btn-add" id="btnAdd">＋ ADD INSTRUCTION</button>
+      </div>
+
+      <div class="ps">
+        <div class="ps-title">PIPELINE CONFIG</div>
+        <div class="rgrp">
+          <button class="rbtn on" data-stages="5">5-STAGE</button>
+          <button class="rbtn" data-stages="4">4-STAGE</button>
+        </div>
+        <div class="sdesc" id="sdesc">IF → ID → EX → MEM → WB</div>
+        <div class="trow">
+          <div><div class="tlabel">Data Forwarding</div><div class="tsub">EX→EX, MEM→EX bypass</div></div>
+          <div class="tsw" id="fwdTgl"></div>
+        </div>
+        <div class="trow">
+          <div><div class="tlabel">Split-Phase Register Access</div><div class="tsub">WB first half, ID second half (same cycle OK)</div></div>
+          <div class="tsw on" id="splitTgl"></div>
+        </div>
+      </div>
+
+      <div class="ps">
+        <div class="ps-title">CONTROLS</div>
+        <div class="cbtns">
+          <button class="cb cb-run" id="btnSim">▶ SIMULATE</button>
+          <button class="cb cb-step" id="btnStep" disabled>⬆ STEP +1 CYCLE</button>
+          <button class="cb cb-reset" id="btnReset" disabled>↺ RESET</button>
+        </div>
+        <div class="srow"><span class="slbl">SPEED</span><input type="range" class="sld" id="speedSld" min="1" max="10" value="5"></div>
+        <button class="cb cb-run" id="btnAuto" disabled style="margin-top:.4rem">
+          <span id="autoIco">▶▶</span> <span id="autoLbl">AUTO-RUN</span>
+        </button>
+        <div class="cydisplay">
+          <div class="cynum" id="cyNum">—</div>
+          <div class="cylbl">CURRENT CYCLE</div>
+          <div class="cyprog"><div class="cybar" id="cyBar" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <!-- LEGEND -->
+      <div class="ps">
+        <div class="ps-title">LEGEND — FULL FORMS</div>
+
+        <div class="legend-box">
+          <div class="leg-title">PIPELINE STAGES</div>
+          <div class="legend-grid">
+            <div class="leg-item"><span class="leg-k">IF</span><span class="leg-v">Instruction Fetch — fetch the instruction from memory using the program counter</span></div>
+            <div class="leg-item"><span class="leg-k">ID</span><span class="leg-v">Instruction Decode — decode opcode and read source registers from the register file</span></div>
+            <div class="leg-item"><span class="leg-k">EX</span><span class="leg-v">Execute — ALU performs the arithmetic/logic computation or address calculation</span></div>
+            <div class="leg-item"><span class="leg-k">MEM</span><span class="leg-v">Memory Access — read or write data from/to the data cache (used by LW/SW)</span></div>
+            <div class="leg-item"><span class="leg-k">WB</span><span class="leg-v">Write-Back — write the result back into the destination register</span></div>
+            <div class="leg-item"><span class="leg-k">MEM/WB</span><span class="leg-v">Combined Memory + Write-Back stage (4-stage pipeline only)</span></div>
+            <div class="leg-item"><span class="leg-k">STALL</span><span class="leg-v">Pipeline Stall — a bubble injected to wait for a data dependency to resolve</span></div>
+          </div>
+        </div>
+
+        <div class="legend-box">
+          <div class="leg-title">INSTRUCTIONS</div>
+          <div class="legend-grid">
+            <div class="leg-item"><span class="leg-k">ADD</span><span class="leg-v">Add — adds two source registers: dest = src1 + src2</span></div>
+            <div class="leg-item"><span class="leg-k">SUB</span><span class="leg-v">Subtract — subtracts registers: dest = src1 − src2</span></div>
+            <div class="leg-item"><span class="leg-k">LW</span><span class="leg-v">Load Word — loads a 32-bit word from memory into a register: dest = Mem[base + offset]</span></div>
+            <div class="leg-item"><span class="leg-k">SW</span><span class="leg-v">Store Word — stores a register value into memory: Mem[base + offset] = src</span></div>
+          </div>
+        </div>
+
+        <div class="legend-box">
+          <div class="leg-title">HAZARD TYPES</div>
+          <div class="sym-grid" style="margin-top:.2rem">
+            <div class="sym-item"><span class="sym-s" style="color:var(--red)">RAW</span><span class="sym-v"><strong style="color:var(--text)">Read After Write</strong> — a later instruction tries to read a register before an earlier instruction has finished writing it. This is a data hazard.</span></div>
+            <div class="sym-item"><span class="sym-s" style="color:var(--gold)">EX Hazard</span><span class="sym-v"><strong style="color:var(--text)">Execute-stage hazard</strong> — the producing instruction is in EX when the consuming instruction needs the value in EX. With forwarding, the EX result is forwarded directly (0 stalls). Example: <em>ADD R1,R2,R3</em> followed by <em>SUB R4,R1,R5</em> — I2 reads R1 which I1 writes; I1 is in EX when I2 reaches EX.</span></div>
+            <div class="sym-item"><span class="sym-s" style="color:var(--gold)">MEM Hazard</span><span class="sym-v"><strong style="color:var(--text)">Memory-stage hazard</strong> — the producer is in MEM when the consumer needs the value in EX. With forwarding, the MEM result is forwarded (0 stalls for ALU; 1 stall for LW since data is only available <em>after</em> MEM, not during EX). Example: <em>LW R6,0(R4)</em> followed by <em>ADD R7,R6,R1</em> — I2 needs R6 which I1 loads from memory; since the loaded value is only ready after I1's MEM stage, 1 stall is unavoidable even with forwarding.</span></div>
+          </div>
+        </div>
+
+        <div class="legend-box">
+          <div class="leg-title">SYMBOLS &amp; NOTATION</div>
+          <div class="sym-grid">
+            <div class="sym-item"><span class="sym-s" style="color:var(--accent)">I1, I2…</span><span class="sym-v">Instruction number in sequence (I1 = first instruction)</span></div>
+            <div class="sym-item"><span class="sym-s" style="color:var(--accent)">Cn</span><span class="sym-v">Clock cycle number (C1 = first cycle, C2 = second, etc.)</span></div>
+            <div class="sym-item"><span class="sym-s" style="color:var(--accent)">R0…R7</span><span class="sym-v">General-purpose registers in the CPU register file</span></div>
+            <div class="sym-item"><span class="sym-s" style="color:var(--accent2)">←FWD</span><span class="sym-v">Data forwarding — value bypassed directly from an earlier pipeline stage without waiting for WB</span></div>
+            <div class="sym-item"><span class="sym-s" style="color:var(--red)">STALL</span><span class="sym-v">Pipeline bubble — one wasted cycle inserted between ID and EX to wait for data</span></div>
+            <div class="sym-item"><span class="sym-s" style="color:var(--green)">✓ OK</span><span class="sym-v">Hazard resolved with no stalls — data ready in time</span></div>
+            <div class="sym-item"><span class="sym-s" style="color:var(--text2)">dest</span><span class="sym-v">Destination register — the register that receives the result</span></div>
+            <div class="sym-item"><span class="sym-s" style="color:var(--text2)">src1/2</span><span class="sym-v">Source register(s) — the registers whose values are read as inputs</span></div>
+            <div class="sym-item"><span class="sym-s" style="color:var(--text2)">offset</span><span class="sym-v">Immediate byte offset added to the base register for memory address calculation</span></div>
+            <div class="sym-item"><span class="sym-s" style="color:var(--text2)">base</span><span class="sym-v">Base register whose value forms the base memory address in LW/SW</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOLUTIONS -->
+      <div class="ps">
+        <div class="ps-title">CONCEPTS</div>
+
+        <div class="sol-box">
+          <div class="sol-title nofwd">WITHOUT FORWARDING — Split Access ON (default)</div>
+          <div class="sol-seq">
+            I1: <span class="s-if">IF</span> → <span class="s-id">ID</span> → <span class="s-ex">EX</span> → <span class="s-mem">MEM</span> → <span class="s-wb">WB</span><br>
+            I2: <span class="s-if">IF</span> → <span class="s-stall">S</span> → <span class="s-stall">S</span> → <span class="s-id">ID</span> → <span class="s-ex">EX</span> → <span class="s-mem">MEM</span> → <span class="s-wb">WB</span>
+          </div>
+          <div class="sol-body">
+            Stalls are inserted <strong>between IF and ID</strong> so that ID (register read) is delayed until the producer's WB has written the register. With split-phase access, ID can occur in the <em>same</em> cycle as WB (WB writes first half, ID reads second half) — so 2 stalls are needed for a 5-stage pipeline.
+          </div>
+        </div>
+
+        <div class="sol-box">
+          <div class="sol-title nofwd">WITHOUT FORWARDING — Split Access OFF</div>
+          <div class="sol-seq">
+            I1: <span class="s-if">IF</span> → <span class="s-id">ID</span> → <span class="s-ex">EX</span> → <span class="s-mem">MEM</span> → <span class="s-wb">WB</span><br>
+            I2: <span class="s-if">IF</span> → <span class="s-stall">S</span> → <span class="s-stall">S</span> → <span class="s-stall">S</span> → <span class="s-id">ID</span> → <span class="s-ex">EX</span> → <span class="s-mem">MEM</span> → <span class="s-wb">WB</span>
+          </div>
+          <div class="sol-body">
+            Without split-phase access, ID must occur <em>strictly after</em> WB completes — one additional stall is required. 3 stalls for a 5-stage pipeline, 2 stalls for 4-stage.
+          </div>
+        </div>
+
+        <div class="sol-box">
+          <div class="sol-title fwd">WITH FORWARDING — ALU→ALU (EX or MEM Hazard)</div>
+          <div class="sol-seq">
+            I1: <span class="s-if">IF</span> → <span class="s-id">ID</span> → <span class="s-ex">EX</span> → <span class="s-mem">MEM</span> → <span class="s-wb">WB</span><br>
+            I2: <span class="s-if">IF</span> → <span class="s-id">ID</span> → <span class="s-ex">EX ←FWD</span> → <span class="s-mem">MEM</span> → <span class="s-wb">WB</span>
+          </div>
+          <div class="sol-body">
+            With forwarding, the ALU result from I1's EX stage is forwarded directly to I2's EX stage — no stalls needed. Layout is unchanged: IF → ID → EX → MEM → WB.
+          </div>
+        </div>
+
+        <div class="sol-box">
+          <div class="sol-title lw">WITH FORWARDING — LW Load-Use Hazard</div>
+          <div class="sol-seq">
+            I1 (LW): <span class="s-if">IF</span> → <span class="s-id">ID</span> → <span class="s-ex">EX</span> → <span class="s-mem">MEM</span> → <span class="s-wb">WB</span><br>
+            I2:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="s-if">IF</span> → <span class="s-id">ID</span> → <span class="s-stall">S</span> → <span class="s-ex">EX ←FWD</span> → <span class="s-mem">MEM</span> → <span class="s-wb">WB</span>
+          </div>
+          <div class="sol-body">
+            LW produces its value after MEM, not EX. Even with forwarding, 1 unavoidable stall is inserted <strong>between ID and EX</strong> of the consumer. The MEM result is then forwarded to EX (MEM→EX path).
+          </div>
+        </div>
+
+      </div>
+
+    </aside>
+
+    <div class="drag-h" id="dragH"></div>
+
+    <main class="main">
+      <div class="main-top" id="mainTop">
+        <div class="viz-hdr">
+          <div class="viz-title">PIPELINE EXECUTION TABLE</div>
+          <div class="legend" id="lgnd"></div>
+        </div>
+        <div class="tbl-wrap">
+          <div class="empty-s" id="emptyS"><div class="big">⚙</div><p>Add instructions and press SIMULATE</p></div>
+          <div id="tblCont" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="drag-v" id="dragV"></div>
+
+      <div class="hazard-panel" id="hzPanel">
+        <div class="bottom-cols">
+          <div class="bottom-col">
+            <div class="hz-title">HAZARD ANALYSIS</div>
+            <div class="hz-list" id="hzList"><div class="hz-e">Run simulation to detect hazards</div></div>
+          </div>
+          <div class="bottom-col sol-col" id="solPanel" style="display:none">
+            <div class="hz-title">SOLUTION EXPLAINED</div>
+            <div id="solContent"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+/* STARS */
+(()=>{
+  const c=document.getElementById('stars'),ctx=c.getContext('2d');
+  let W,H,S=[];
+  const init=()=>{W=c.width=innerWidth;H=c.height=innerHeight;S=[];for(let i=0;i<200;i++)S.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.2+.2,o:Math.random()*.7+.1,s:Math.random()*.0015})};
+  const draw=()=>{ctx.clearRect(0,0,W,H);S.forEach(s=>{s.o+=s.s;if(s.o>.9||s.o<.1)s.s*=-1;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(200,214,255,${s.o})`;ctx.fill()});requestAnimationFrame(draw)};
+  addEventListener('resize',init);init();draw();
+})();
+
+/* THEME */
+let dark=true;
+document.getElementById('themeBtn').addEventListener('click',()=>{
+  dark=!dark;document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+  document.getElementById('themeBtn').textContent=dark?'🌙':'☀️';
+});
+
+/* RESIZE SIDEBAR */
+(()=>{
+  const sb=document.getElementById('sidebar'),dh=document.getElementById('dragH');
+  let on=false,sx=0,sw=0;
+  dh.addEventListener('mousedown',e=>{on=true;sx=e.clientX;sw=sb.offsetWidth;dh.classList.add('act');document.body.style.cursor='col-resize';document.body.style.userSelect='none'});
+  document.addEventListener('mousemove',e=>{if(!on)return;sb.style.width=Math.min(600,Math.max(200,sw+e.clientX-sx))+'px'});
+  document.addEventListener('mouseup',()=>{on=false;dh.classList.remove('act');document.body.style.cursor='';document.body.style.userSelect=''});
+  dh.addEventListener('touchstart',e=>{on=true;sx=e.touches[0].clientX;sw=sb.offsetWidth},{passive:true});
+  document.addEventListener('touchmove',e=>{if(!on)return;sb.style.width=Math.min(600,Math.max(200,sw+e.touches[0].clientX-sx))+'px'},{passive:true});
+  document.addEventListener('touchend',()=>{on=false});
+})();
+
+/* RESIZE BOTTOM PANEL */
+(()=>{
+  const hp=document.getElementById('hzPanel'),dv=document.getElementById('dragV');
+  let on=false,sy=0,sh=0;
+  dv.addEventListener('mousedown',e=>{on=true;sy=e.clientY;sh=hp.offsetHeight;dv.classList.add('act');document.body.style.cursor='row-resize';document.body.style.userSelect='none'});
+  document.addEventListener('mousemove',e=>{if(!on)return;hp.style.height=Math.min(400,Math.max(55,sh-(e.clientY-sy)))+'px'});
+  document.addEventListener('mouseup',()=>{on=false;dv.classList.remove('act');document.body.style.cursor='';document.body.style.userSelect=''});
+})();
+
+/* INSTRUCTION LOGIC */
+const REGS=['R0','R1','R2','R3','R4','R5','R6','R7'];
+// XOR, AND, OR removed
+const OPS_ALU=['ADD','SUB'];
+const OPS_MEM=['LW','SW'];
+const OPS=[...OPS_ALU,...OPS_MEM];
+
+function iStr(inst){
+  if(!inst.op)return '';
+  if(inst.op==='LW')return `LW ${inst.dest}, ${inst.offset}(${inst.srcs[0]})`;
+  if(inst.op==='SW')return `SW ${inst.srcs[0]}, ${inst.offset}(${inst.srcs[1]})`;
+  return `${inst.op} ${inst.dest}, ${inst.srcs[0]}, ${inst.srcs[1]}`;
+}
+
+/* ============================================================
+   SIMULATION ENGINE
+
+   Pipeline layout (no forwarding):
+     Split ON:  IF → S…S → ID → EX → MEM → WB
+                Stalls between IF and ID.
+                Consumer ID may land on SAME cycle as producer WB
+                (split-phase: WB writes first half, ID reads second half).
+     Split OFF: IF → S…S → S → ID → EX → MEM → WB
+                One extra stall — consumer ID must be STRICTLY AFTER producer WB.
+
+   With forwarding (split access doesn't change stall count):
+     ALU: EX→EX bypass — 0 stalls, no stalls between IF and ID.
+          Layout: IF → ID → EX → MEM → WB
+     LW : MEM→EX bypass — 1 unavoidable stall between ID and EX.
+          Layout: IF → ID → S → EX → MEM → WB
+          (stall is between ID and EX, not between IF and ID)
+
+   Rules 4 & 5: IF starts at prevIF+1 skipping stall cycles.
+                ID starts after IF + all stalls-before-ID, also skipping stall cycles.
+   Rule 6: Stall cycles are global — no real stage may appear in them for any instruction.
+   ============================================================ */
+function hasRAW(a,b){return !!(a.dest && b.srcs && b.srcs.includes(a.dest))}
+
+function nextFree(desired, stallSet){
+  let c = desired;
+  while(stallSet.has(c)) c++;
+  return c;
+}
+
+function computeSched(instructions, stages, fwd, split){
+  const sNames = stages===5 ? ['IF','ID','EX','MEM','WB'] : ['IF','ID','EX','MEM/WB'];
+  const n = instructions.length;
+
+  // ── Pass 1: stall counts (approximate entry for dependency math) ──
+  // entryApprox[i] = natural IF cycle assuming consecutive IFs + cumulative stalls
+  // For no-fwd: stalls go between IF and ID, so cumS tracks total stalls inserted
+  // for scheduling purposes.
+  const stallsBefore = new Array(n).fill(0); // stalls between IF and ID (no-fwd)
+  const stallsAfter  = new Array(n).fill(0); // stalls between ID and EX (fwd LW only)
+  const deps = [];
+  let cumS = 0;
+  const entryApprox = new Array(n); // approximate IF cycle
+
+  for(let i=0; i<n; i++){
+    entryApprox[i] = (i+1) + cumS;
+    let msBefore = 0, msAfter = 0;
+    const md = [];
+
+    for(let j=0; j<i; j++){
+      if(!hasRAW(instructions[j], instructions[i])) continue;
+
+      const prodIF   = entryApprox[j];
+      const prodSB   = stallsBefore[j];
+      const prodSA   = stallsAfter[j];
+      // Producer's WB cycle (absolute):
+      // prodIF + prodSB + 1(ID) + prodSA + (stages-2) remaining stages after ID
+      // = prodIF + prodSB + prodSA + (stages-1)
+      const prodWB   = prodIF + prodSB + prodSA + (stages - 1);
+      const consIF   = entryApprox[i];
+
+      let sn = 0, sa = 0;
+
+      if(!fwd){
+        // No forwarding: consumer ID must be >= prodWB (split ON) or > prodWB (split OFF)
+        // Consumer ID natural (no extra stalls) = consIF + 1
+        const idNatural = consIF + 1;
+        const idNeeded  = split ? prodWB : prodWB + 1;
+        sn = Math.max(0, idNeeded - idNatural); // stalls before ID
+
+        // For hazard panel: stalls without forwarding
+      } else if(instructions[j].op === 'LW'){
+        // LW with forwarding: 1 stall between ID and EX (load-use)
+        // consumer EX = consIF + 1(ID) + 1(stall) + 1 = consIF+3
+        // producer MEM = prodIF + prodSB + prodSA + (stages-2)  [index 3 from IF]
+        // need consEX > prodMEM
+        const prodMEM = prodIF + prodSB + prodSA + 3;
+        const consEXnat = consIF + 1 + 1; // IF+ID+EX = +2, no stalls yet
+        sa = Math.max(0, prodMEM + 1 - consEXnat); // usually 1
+      } else {
+        // ALU forwarding: EX→EX, 0 stalls
+        sn = 0; sa = 0;
+      }
+
+      // For display: stalls without forwarding (for "fwdReduced" label)
+      const idNatural = consIF + 1;
+      const idNeeded  = split ? prodWB : prodWB + 1;
+      const snNoFwd   = Math.max(0, idNeeded - idNatural);
+
+      md.push({
+        fromIdx:     j,
+        reg:         instructions[j].dest,
+        stallsAdded: fwd ? sa : sn,
+        forwarded:   fwd && sa===0 && snNoFwd>0,
+        fwdReduced:  fwd && sa < snNoFwd,
+        stallsNoFwd: snNoFwd,
+        isAfterID:   fwd && instructions[j].op==='LW'
+      });
+      msBefore = Math.max(msBefore, sn);
+      msAfter  = Math.max(msAfter,  sa);
+    }
+
+    stallsBefore[i] = fwd ? 0       : msBefore;
+    stallsAfter[i]  = fwd ? msAfter : 0;
+    cumS += (fwd ? msAfter : msBefore);
+    deps.push(md);
+  }
+
+  // ── Pass 2a: resolve actual cycles incrementally, building stallSet as we go ──
+  const stallSet = new Set();
+  const stallCycleOwner = {};
+  const actualIF = new Array(n);
+  const actualID = new Array(n);
+  const actualEX = new Array(n);
+  let prevIF = 0;
+
+  for(let i=0; i<n; i++){
+    const sb = stallsBefore[i]; // stalls between IF and ID
+    const sa = stallsAfter[i];  // stalls between ID and EX
+    const cdB = !fwd && deps[i].find(d => d.stallsAdded > 0);
+    const cdA =  fwd && deps[i].find(d => d.isAfterID && d.stallsAdded > 0);
+
+    // Rule 4: IF at first free cycle after prevIF
+    const ifCyc = nextFree(prevIF + 1, stallSet);
+    prevIF = ifCyc;
+    actualIF[i] = ifCyc;
+
+    // Stalls between IF and ID (no-fwd case)
+    // These stall cycles sit at ifCyc+1 .. ifCyc+sb
+    for(let k=0; k<sb; k++){
+      const cyc = ifCyc + 1 + k;
+      stallSet.add(cyc);
+      if(!stallCycleOwner[cyc])
+        stallCycleOwner[cyc] = { iIdx: i, label: cdB ? `← I${cdB.fromIdx+1} RAW ${cdB.reg}` : '', beforeID: true };
+    }
+
+    // Rule 5: ID at first free cycle after IF+stalls
+    const idCyc = nextFree(ifCyc + 1 + sb, stallSet);
+    actualID[i] = idCyc;
+
+    // Stalls between ID and EX (fwd LW case)
+    for(let k=0; k<sa; k++){
+      const cyc = idCyc + 1 + k;
+      stallSet.add(cyc);
+      if(!stallCycleOwner[cyc])
+        stallCycleOwner[cyc] = { iIdx: i, label: cdA ? `← I${cdA.fromIdx+1} RAW ${cdA.reg}` : '', beforeID: false };
+    }
+
+    // EX immediately after ID+stalls
+    actualEX[i] = idCyc + 1 + sa;
+  }
+
+  // ── Pass 2b: build cells ──
+  const sched = [];
+  let maxC = 0;
+
+  for(let i=0; i<n; i++){
+    const cells = [];
+    const sb = stallsBefore[i];
+    const sa = stallsAfter[i];
+    const cdB = !fwd && deps[i].find(d => d.stallsAdded > 0);
+    const cdA =  fwd && deps[i].find(d => d.isAfterID && d.stallsAdded > 0);
+    const ifCyc = actualIF[i];
+    const idCyc = actualID[i];
+    const exCyc = actualEX[i];
+
+    // IF
+    cells.push({ cycle: ifCyc, stage: 'IF' });
+
+    // Stalls between IF and ID (no-fwd)
+    for(let k=0; k<sb; k++){
+      cells.push({ cycle: ifCyc + 1 + k, stage: 'STALL',
+                   note: cdB ? `← I${cdB.fromIdx+1} RAW ${cdB.reg}` : '' });
+    }
+
+    // ID
+    cells.push({ cycle: idCyc, stage: 'ID' });
+
+    // Stalls between ID and EX (fwd LW)
+    for(let k=0; k<sa; k++){
+      cells.push({ cycle: idCyc + 1 + k, stage: 'STALL',
+                   note: cdA ? `← I${cdA.fromIdx+1} RAW ${cdA.reg}` : '' });
+    }
+
+    // EX, MEM, WB (consecutive, never replaced — producers always show their real stages)
+    for(let st=2; st<sNames.length; st++){
+      const sn = sNames[st];
+      const cyc = exCyc + (st - 2);
+      let fn = '';
+      if(fwd && sn==='EX'){
+        const fd = deps[i].find(d => d.forwarded);
+        if(fd) fn = `←FWD ${fd.reg}`;
+      }
+      cells.push({ cycle: cyc, stage: sn, fwdNote: fn });
+    }
+
+    sched.push(cells);
+    const last = cells[cells.length - 1];
+    if(last) maxC = Math.max(maxC, last.cycle);
+  }
+
+  // Combine stallsBefore+stallsAfter into single stall[] for downstream display
+  const stall = stallsBefore.map((sb,i) => sb + stallsAfter[i]);
+  const entry = actualIF;
+  const stallCycleInfo = stallCycleOwner;
+  return { sched, entry, stall, stallsBefore, stallsAfter, deps, sNames, maxC, stallCycleInfo };
+}
+
+/* STATE */
+const ST={instructions:[],stages:5,fwd:false,split:true,res:null,cur:0,maxC:0,timer:null};
+const DEF=[
+  {op:'ADD',dest:'R1',srcs:['R2','R3'],offset:'0'},
+];
+DEF.forEach(d=>ST.instructions.push({...d,raw:iStr(d)}));
+
+/* RENDER INSTRUCTION LIST */
+function mkSel(opts,val,cls,fn){
+  const s=document.createElement('select');s.className=cls;
+  opts.forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent=o;if(o===val)op.selected=true;s.appendChild(op)});
+  s.addEventListener('change',fn);return s;
+}
+function mkOff(val,fn){
+  const i=document.createElement('input');i.className='roff';i.type='number';i.value=val||'0';i.step=4;
+  i.addEventListener('change',fn);i.addEventListener('input',fn);return i;
+}
+
+function renderList(){
+  const list=document.getElementById('instrList');list.innerHTML='';
+  ST.instructions.forEach((inst,i)=>{
+    const card=document.createElement('div');card.className='icard';
+    const head=document.createElement('div');head.className='icard-head';
+    const num=document.createElement('div');num.className='inum';num.textContent=`I${i+1}`;
+    const prev=document.createElement('div');prev.className='ipreview'+(inst.op?' ok':'');prev.textContent=iStr(inst)||'— choose op below —';
+    const del=document.createElement('button');del.className='idel';del.innerHTML='&times;';
+    del.addEventListener('click',()=>{if(ST.instructions.length>1){ST.instructions.splice(i,1);renderList();resetSim()}});
+    head.appendChild(num);head.appendChild(prev);head.appendChild(del);
+    const opg=document.createElement('div');opg.className='op-group';
+    OPS.forEach(op=>{
+      const b=document.createElement('button');b.className='op-btn'+(inst.op===op?' sel':'');b.textContent=op;
+      b.addEventListener('click',()=>{
+        if(inst.op===op)return;
+        inst.op=op;
+        if(op==='LW'){inst.dest=inst.dest||'R0';inst.srcs=['R1'];inst.offset='0';}
+        else if(op==='SW'){inst.dest=null;inst.srcs=['R0','R1'];inst.offset='0';}
+        else{inst.dest=inst.dest||'R0';if(!inst.srcs||inst.srcs.length<2)inst.srcs=['R1','R2'];}
+        inst.raw=iStr(inst);resetSim();renderList();
+      });
+      opg.appendChild(b);
+    });
+    const regr=document.createElement('div');regr.className='reg-row';
+    const upd=()=>{inst.raw=iStr(inst);prev.textContent=iStr(inst)||'—';prev.className='ipreview'+(inst.op?' ok':'');resetSim()};
+    if(inst.op){
+      const lbl=(t)=>{const s=document.createElement('span');s.className='rl';s.textContent=t;return s};
+      if(inst.op==='LW'){
+        regr.append(lbl('dest'),mkSel(REGS,inst.dest||'R0','rsel',e=>{inst.dest=e.target.value;upd()}),lbl('off'),mkOff(inst.offset,e=>{inst.offset=e.target.value;upd()}),lbl('base'),mkSel(REGS,inst.srcs[0]||'R1','rsel',e=>{inst.srcs[0]=e.target.value;upd()}));
+      }else if(inst.op==='SW'){
+        regr.append(lbl('src'),mkSel(REGS,inst.srcs[0]||'R0','rsel',e=>{inst.srcs[0]=e.target.value;upd()}),lbl('off'),mkOff(inst.offset,e=>{inst.offset=e.target.value;upd()}),lbl('base'),mkSel(REGS,inst.srcs[1]||'R1','rsel',e=>{inst.srcs[1]=e.target.value;upd()}));
+      }else{
+        const s1=inst.srcs&&inst.srcs[0]||'R1',s2=inst.srcs&&inst.srcs[1]||'R2';
+        regr.append(lbl('dest'),mkSel(REGS,inst.dest||'R0','rsel',e=>{inst.dest=e.target.value;upd()}),lbl('s1'),mkSel(REGS,s1,'rsel',e=>{inst.srcs[0]=e.target.value;upd()}),lbl('s2'),mkSel(REGS,s2,'rsel',e=>{inst.srcs[1]=e.target.value;upd()}));
+      }
+    }
+    card.appendChild(head);card.appendChild(opg);if(inst.op)card.appendChild(regr);
+    list.appendChild(card);
+  });
+  document.getElementById('btnAdd').disabled=ST.instructions.length>=10;
+}
+
+/* TABLE */
+function sClass(s){return{IF:'sIF',ID:'sID',EX:'sEX',MEM:'sMEM',WB:'sWB','MEM/WB':'sMWB',STALL:'sSTALL'}[s]||''}
+function buildLgnd(names){
+  const map={IF:['--pIF-bg','--pIF-c','--pIF-b'],ID:['--pID-bg','--pID-c','--pID-b'],EX:['--pEX-bg','--pEX-c','--pEX-b'],MEM:['--pMEM-bg','--pMEM-c','--pMEM-b'],WB:['--pWB-bg','--pWB-c','--pWB-b'],'MEM/WB':['--pMWB-bg','--pMWB-c','--pMWB-b'],STALL:['--pSTALL-bg','--pSTALL-c','--pSTALL-b']};
+  document.getElementById('lgnd').innerHTML=[...names,'STALL'].map(n=>{const c=map[n]||[];return`<div class="li"><div class="ldot" style="background:var(${c[0]});border-color:var(${c[2]})"></div><span style="color:var(${c[1]})">${n}</span></div>`}).join('');
+}
+
+function buildTable(){
+  const r=ST.res;if(!r)return;
+  const{sched,maxC}=r,n=sched.length;
+  let h=`<table class="pt"><thead><tr><th class="th-i">INSTRUCTION</th>`;
+  for(let c=1;c<=maxC;c++)h+=`<th class="th-c" id="thc${c}">C${c}</th>`;
+  h+=`</tr></thead><tbody>`;
+  for(let i=0;i<n;i++){
+    const cm={};sched[i].forEach(c=>cm[c.cycle]=c);
+    h+=`<tr><td class="td-i"><span class="lbl">I${i+1}</span><span class="txt">${ST.instructions[i].raw||'—'}</span></td>`;
+    for(let c=1;c<=maxC;c++){
+      const cell=cm[c];
+      if(cell){
+        const sc=sClass(cell.stage),isFwd=cell.fwdNote;
+        let inner=cell.stage==='STALL'?`<div class="sp">STALL<span class="stall-n">${cell.note||''}</span></div>`:isFwd?`<div class="sp">${cell.stage}<span class="fwd-t">${cell.fwdNote}</span></div>`:`<div class="sp">${cell.stage}</div>`;
+        h+=`<td class="cell ${sc}${isFwd?' sFWD':''}" id="c${i}-${c}">${inner}</td>`;
+      }else h+=`<td class="cell" id="c${i}-${c}"></td>`;
+    }
+    h+='</tr>';
+  }
+  h+='</tbody></table>';
+  document.getElementById('tblCont').innerHTML=h;
+  document.getElementById('tblCont').style.display='block';
+  document.getElementById('emptyS').style.display='none';
+}
+
+function updateVis(){
+  const r=ST.res;if(!r)return;const cc=ST.cur;
+  for(let c=1;c<=r.maxC;c++){const t=document.getElementById(`thc${c}`);if(t)t.classList.toggle('ac',c===cc)}
+  for(let i=0;i<r.sched.length;i++)r.sched[i].forEach(cell=>{
+    const el=document.getElementById(`c${i}-${cell.cycle}`);if(!el)return;
+    el.classList.toggle('vis',cell.cycle<=cc);el.classList.toggle('cur',cell.cycle===cc);el.classList.toggle('ac',cell.cycle===cc);
+  });
+  document.getElementById('cyNum').textContent=cc||'—';
+  document.getElementById('cyBar').style.width=(r.maxC>0?(cc/r.maxC)*100:0)+'%';
+}
+
+function buildHz(){
+  const r=ST.res;if(!r){document.getElementById('hzList').innerHTML='<div class="hz-e">Run simulation to detect hazards</div>';return;}
+  let any=false,h='';
+  r.deps.forEach((ds,i)=>ds.forEach(d=>{
+    any=true;
+    const isLW=ST.instructions[d.fromIdx]&&ST.instructions[d.fromIdx].op==='LW';
+    const hazType=isLW?'MEM Hazard (LW load-use)':'EX/MEM Hazard (RAW)';
+    if(d.forwarded)h+=`<div class="hz-tag fwd"><div class="hz-d" style="background:var(--green)"></div>I${i+1} ← I${d.fromIdx+1} [${d.reg}] — FORWARDED · ${hazType} · 0 stalls</div>`;
+    else if(d.stallsAdded>0){
+      const fwdInfo=d.fwdReduced?` (forwarding active; was ${d.stallsNoFwd} stalls without it)`:'';
+      h+=`<div class="hz-tag raw"><div class="hz-d" style="background:var(--red)"></div>I${i+1} ← I${d.fromIdx+1} [${d.reg}] — ${hazType} · RAW · ${d.stallsAdded} stall${d.stallsAdded!==1?'s':''}${fwdInfo}</div>`;
+    }else h+=`<div class="hz-tag ok"><div class="hz-d" style="background:var(--text2)"></div>I${i+1} ← I${d.fromIdx+1} [${d.reg}] — resolved, no stalls needed</div>`;
+  }));
+  if(!any)h=`<div class="hz-e" style="color:var(--green)">✓ No RAW hazards — pipeline flows freely</div>`;
+  document.getElementById('hzList').innerHTML=h;
+}
+
+function stageSpan(s){
+  const map={IF:'s-if',ID:'s-id',EX:'s-ex',MEM:'s-mem',WB:'s-wb','MEM/WB':'s-mwb',STALL:'s-stall'};
+  return`<span class="${map[s]||'s-if'}">${s}</span>`;
+}
+
+function buildSolution(){
+  const r=ST.res;
+  const sp=document.getElementById('solPanel');
+  const sc=document.getElementById('solContent');
+  if(!r){sp.style.display='none';return;}
+
+  const instrs=ST.instructions;
+  const stages=ST.stages;
+  const fwd=ST.fwd;
+  const sNames=r.sNames;
+  let html='';
+
+  // For each instruction build its pipeline sequence string
+  function seqFor(i){
+    const sb = r.stallsBefore ? r.stallsBefore[i] : 0;
+    const sa = r.stallsAfter  ? r.stallsAfter[i]  : 0;
+    let seq=[];
+    seq.push(stageSpan('IF'));
+    for(let k=0;k<sb;k++) seq.push(stageSpan('STALL'));
+    seq.push(stageSpan('ID'));
+    for(let k=0;k<sa;k++) seq.push(stageSpan('STALL'));
+    for(let st=2;st<sNames.length;st++) seq.push(stageSpan(sNames[st]));
+    return`I${i+1} (${instrs[i].raw||instrs[i].op}): `+seq.join(' → ');
+  }
+
+  // Overview line
+  const totalStalls=r.stall.reduce((a,b)=>a+b,0);
+  const model=fwd?'<strong style="color:var(--green)">WITH forwarding</strong>':'<strong style="color:var(--red)">WITHOUT forwarding</strong>';
+  html+=`<div class="sol-box"><div class="sol-title" style="color:var(--accent)">PIPELINE SUMMARY</div>
+    <div class="sol-body">
+      Model: ${model} · Stages: <strong>${stages}</strong> · Total clock cycles: <strong>${r.maxC}</strong> · Total stalls inserted: <strong>${totalStalls}</strong><br>
+    </div></div>`;
+
+  // Per-instruction sequences
+  let seqHtml='';
+  for(let i=0;i<instrs.length;i++) seqHtml+=`<div class="sol-seq">${seqFor(i)}</div>`;
+  html+=`<div class="sol-box"><div class="sol-title" style="color:var(--text2)">EXECUTION SEQUENCES</div>${seqHtml}</div>`;
+
+  // Per-hazard explanations
+  let anyHaz=false;
+  r.deps.forEach((ds,i)=>ds.forEach(d=>{
+    anyHaz=true;
+    const prod=instrs[d.fromIdx],cons=instrs[i];
+    const isLW=prod.op==='LW';
+    let title,body;
+    if(d.forwarded){
+      title=`<span class="sol-title fwd">I${d.fromIdx+1}→I${i+1}: ${d.reg} — FORWARDED (0 stalls)</span>`;
+      body=`I${d.fromIdx+1} (<em>${prod.raw}</em>) writes <strong>${d.reg}</strong>. I${i+1} (<em>${cons.raw}</em>) reads it. With forwarding the result is bypassed directly from the EX/MEM stage output — no stalls needed.`;
+    } else if(d.stallsAdded>0){
+      const stallWord=d.stallsAdded===1?'1 stall':`${d.stallsAdded} stalls`;
+      if(!fwd){
+        // No forwarding explanation
+        const wbCycle=r.entry[d.fromIdx]+r.stall[d.fromIdx]+(stages-1);
+        const exCycle=r.entry[i]+r.stall[i]+2;
+        title=`<span class="sol-title nofwd">I${d.fromIdx+1}→I${i+1}: ${d.reg} — RAW · ${stallWord} (no forwarding)</span>`;
+        body=`I${d.fromIdx+1} (<em>${prod.raw}</em>) writes <strong>${d.reg}</strong> at its <strong>WB stage (cycle ${wbCycle})</strong>. `+
+          `Without forwarding, I${i+1} (<em>${cons.raw}</em>) must not read <strong>${d.reg}</strong> until after WB ${ST.split?'completes its first half':'completes fully'}. `+
+          `Its ID stage begins at cycle ${exCycle}. `+
+          `<strong>${stallWord}</strong> ${d.stallsAdded===1?'is':'are'} inserted <strong>between IF and ID</strong> to delay decode until the register is available.`;
+        if(isLW) body+=` Note: LW only produces its value after MEM (stage ${stages===5?4:3}), making the wait even longer.`;
+      } else {
+        // Forwarding but still stalls (LW load-use)
+        const memCycle=r.entry[d.fromIdx]+r.stall[d.fromIdx]+3;
+        const exCycle=r.entry[i]+r.stall[i]+2;
+        title=`<span class="sol-title lw">I${d.fromIdx+1}→I${i+1}: ${d.reg} — LW load-use · ${stallWord}</span>`;
+        body=`I${d.fromIdx+1} (<em>${prod.raw}</em>) is a <strong>Load Word</strong> — it retrieves <strong>${d.reg}</strong> from memory at its MEM stage (cycle ${memCycle}). `+
+          `Even with forwarding, I${i+1}'s EX (cycle ${exCycle}) would need the value before it's available. `+
+          `<strong>1 unavoidable stall</strong> is inserted. After the stall, the MEM result is forwarded (MEM→EX path) to I${i+1}'s EX stage.`;
+      }
+    } else {
+      title=`<span class="sol-title" style="color:var(--text2)">I${d.fromIdx+1}→I${i+1}: ${d.reg} — no stalls needed</span>`;
+      body=`I${d.fromIdx+1} writes <strong>${d.reg}</strong> and I${i+1} reads it, but by the time I${i+1} reaches EX the value is already available — resolved naturally by pipeline timing.`;
+    }
+    html+=`<div class="sol-box"><div class="${title.includes('sol-title')?'':'sol-title'}">${title}</div><div class="sol-body">${body}</div></div>`;
+  }));
+
+  if(!anyHaz){
+    html+=`<div class="sol-box"><div class="sol-title fwd">✓ NO HAZARDS DETECTED</div><div class="sol-body">All instructions are independent — no RAW data dependencies exist. The pipeline flows without any stalls.</div></div>`;
+  }
+
+  sc.innerHTML=html;
+  sp.style.display='block';
+}
+
+/* SIM CONTROLS */
+function simulate(){
+  const valid=ST.instructions.filter(i=>i.op);if(!valid.length)return;
+  stopAuto();
+  ST.res=computeSched(valid,ST.stages,ST.fwd,ST.split);ST.maxC=ST.res.maxC;ST.cur=0;
+  buildLgnd(ST.res.sNames);buildTable();buildHz();buildSolution();updateVis();
+  ['btnStep','btnReset','btnAuto'].forEach(id=>document.getElementById(id).disabled=false);
+  document.getElementById('btnSim').textContent='▶ RE-SIMULATE';
+}
+function step(){
+  if(!ST.res||ST.cur>=ST.maxC){stopAuto();return;}
+  ST.cur++;updateVis();
+  const th=document.getElementById(`thc${ST.cur}`);if(th)th.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  if(ST.cur>=ST.maxC)stopAuto();
+}
+function resetSim(){
+  stopAuto();ST.res=null;ST.cur=0;ST.maxC=0;
+  document.getElementById('tblCont').style.display='none';document.getElementById('tblCont').innerHTML='';
+  document.getElementById('emptyS').style.display='flex';
+  ['btnStep','btnReset','btnAuto'].forEach(id=>document.getElementById(id).disabled=true);
+  document.getElementById('cyNum').textContent='—';document.getElementById('cyBar').style.width='0%';
+  document.getElementById('hzList').innerHTML='<div class="hz-e">Run simulation to detect hazards</div>';
+  document.getElementById('lgnd').innerHTML='';
+  document.getElementById('btnSim').textContent='▶ SIMULATE';
+  document.getElementById('solPanel').style.display='none';
+  document.getElementById('solContent').innerHTML='';
+}
+function startAuto(){
+  if(ST.timer)return;
+  const d=Math.round(1400-parseInt(document.getElementById('speedSld').value)*120);
+  ST.timer=setInterval(()=>{if(ST.cur>=ST.maxC){stopAuto();return;}step();},d);
+  document.getElementById('autoIco').textContent='⏸';document.getElementById('autoLbl').textContent='PAUSE';
+}
+function stopAuto(){
+  if(ST.timer){clearInterval(ST.timer);ST.timer=null;}
+  document.getElementById('autoIco').textContent='▶▶';document.getElementById('autoLbl').textContent='AUTO-RUN';
+}
+
+/* WIRE */
+document.getElementById('btnSim').addEventListener('click',simulate);
+document.getElementById('btnStep').addEventListener('click',step);
+document.getElementById('btnReset').addEventListener('click',resetSim);
+document.getElementById('btnAuto').addEventListener('click',()=>{ST.timer?stopAuto():startAuto()});
+document.getElementById('btnAdd').addEventListener('click',()=>{
+  if(ST.instructions.length>=10)return;
+  const n={op:'ADD',dest:'R0',srcs:['R1','R2'],offset:'0'};n.raw=iStr(n);
+  ST.instructions.push(n);renderList();resetSim();
+});
+document.querySelectorAll('.rbtn').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.rbtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  ST.stages=parseInt(b.dataset.stages);
+  document.getElementById('sdesc').textContent=ST.stages===5?'IF → ID → EX → MEM → WB':'IF → ID → EX → MEM/WB';
+  resetSim();
+}));
+document.getElementById('fwdTgl').addEventListener('click',function(){
+  ST.fwd=!ST.fwd;this.classList.toggle('on',ST.fwd);resetSim();
+});
+document.getElementById('splitTgl').addEventListener('click',function(){
+  ST.split=!ST.split;this.classList.toggle('on',ST.split);resetSim();
+});
+
+renderList();
+</script>
+</body>
+</html>
